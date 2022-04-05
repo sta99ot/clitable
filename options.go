@@ -2,29 +2,65 @@ package clitable
 
 type ColumnOption func(c *Column)
 
-func WithColumnAlignment(alignment Alignment) ColumnOption {
+func WithLeftAlignment() ColumnOption {
 	return func(c *Column) {
-		c.Alignment = alignment
+		c.alignment = AlignLeft
+	}
+}
+
+func WithCenterAlignment() ColumnOption {
+	return func(c *Column) {
+		c.alignment = AlignCenter
+	}
+}
+
+func WithRightAlignment() ColumnOption {
+	return func(c *Column) {
+		c.alignment = AlignRight
 	}
 }
 
 func WithColumnColor(color Color) ColumnOption {
 	return func(c *Column) {
-		c.Color = color
+		c.color = color
+	}
+}
+
+func WithColumnMaxWidth(maxWidth int) ColumnOption {
+	return func(c *Column) {
+		c.maxWidth = maxWidth
+	}
+}
+
+func WithColumnMinWidth(minWidth int) ColumnOption {
+	return func(c *Column) {
+		c.width = minWidth
 	}
 }
 
 type TableOption func(c *Table)
 
-func WithTableBorders(style BorderStyle) TableOption {
+func WithDefaultBorders() TableOption {
 	return func(t *Table) {
-		t.bordersStyle = style
+		t.bordersStyle = BordersDefault
 	}
 }
 
-func WithTableHeaders(headersEnabled bool) TableOption {
+func WithMinimalBorders() TableOption {
 	return func(t *Table) {
-		t.headersEnabled = headersEnabled
+		t.bordersStyle = BordersMinimal
+	}
+}
+
+func WithoutBorders() TableOption {
+	return func(t *Table) {
+		t.bordersStyle = BordersNone
+	}
+}
+
+func WithoutTableHeaders() TableOption {
+	return func(t *Table) {
+		t.headersEnabled = false
 	}
 }
 
@@ -34,8 +70,7 @@ func WithBordersColor(bordersColor Color) TableOption {
 	}
 }
 
-
-func WithTableHeadersColor(headersColor Color) TableOption {
+func WithHeadersColor(headersColor Color) TableOption {
 	return func(t *Table) {
 		t.headersColor = headersColor
 	}

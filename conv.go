@@ -2,24 +2,27 @@ package clitable
 
 import (
 	"fmt"
-	"reflect"
-
-	"github.com/go-yaml/yaml"
+	"strings"
 )
 
-func toString(v interface{}) string {
-	if v == nil {
-		return "nil"
-	}
-	t := reflect.TypeOf(v)
-	switch t.Kind() {
-	case reflect.Map, reflect.Slice:
-		line, err := yaml.Marshal(v)
-		if err != nil {
-			return ""
+func splitLines(text string, maxWidth int) []string {
+	var result []string
+	for _, l := range strings.Split(text, "\n") {
+		if len(l) <= maxWidth || maxWidth <= 0 {
+			result = append(result, l)
+			continue
 		}
-		return string(line)
-	default:
-		return fmt.Sprintf("%v", v)
+		for j := 0; j < len(l); j += maxWidth {
+			length := maxWidth
+			if len(l) <= j+maxWidth {
+				length = len(l) - j
+			}
+			result = append(result, l[j:j+length])
+		}
 	}
+	return result
+}
+
+func toString(v interface{}) string {
+	return fmt.Sprintf("%v", v)
 }

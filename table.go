@@ -11,9 +11,11 @@ const colorReset = "\033[0m"
 
 type BorderStyle int
 
-var BordersDefault BorderStyle = 0
-var BordersMinimal BorderStyle = 1
-var BordersNone BorderStyle = 2
+const (
+	BordersDefault BorderStyle = iota
+	BordersMinimal
+	BordersNone
+)
 
 type Table struct {
 	rows           []*row
@@ -35,11 +37,11 @@ func NewTable(columns []*Column, options ...TableOption) (*Table, error) {
 	}
 
 	for i, c := range columns {
-		_, ok := t.columnsMap[c.Name]
+		_, ok := t.columnsMap[c.id]
 		if ok {
-			return nil, fmt.Errorf("column %s already exists", c.Name)
+			return nil, fmt.Errorf("column id %s already exists", c.id)
 		}
-		t.columnsMap[c.Name] = i
+		t.columnsMap[c.id] = i
 		t.columns[i] = c
 	}
 	for _, opt := range options {
@@ -48,17 +50,13 @@ func NewTable(columns []*Column, options ...TableOption) (*Table, error) {
 	return t, nil
 }
 
-func (t *Table) AddRow(values ...interface{}) error {
-	if len(values) != len(t.columns) {
-		return fmt.Errorf("values count don't match columns count")
-	}
+func (t *Table) addRowStrings(values []string) {
 	r := &row{
 		height: 1,
 		values: make([][]string, len(t.columns)),
 	}
 	for i, v := range values {
-		vStr := strings.Trim(strings.ReplaceAll(toString(v), "\t", "  "), "\n")
-		vLines := strings.Split(vStr, "\n")
+		vLines := splitLines(v, t.columns[i].maxWidth)
 		if len(vLines) > r.height {
 			r.height = len(vLines)
 		}
@@ -70,13 +68,25 @@ func (t *Table) AddRow(values ...interface{}) error {
 		r.values[i] = vLines
 	}
 	t.rows = append(t.rows, r)
+}
+
+func (t *Table) AddRow(values ...interface{}) error {
+	if len(values) != len(t.columns) {
+		return fmt.Errorf("values count don't match columns count")
+	}
+	r := make([]string, len(t.columns))
+
+	for i, v := range values {
+		r[i] = strings.Trim(strings.ReplaceAll(toString(v), "\t", "  "), "\n")
+	}
+	t.addRowStrings(r)
 	return nil
 }
 
 func (t *Table) getColumnNames() []string {
 	names := make([]string, len(t.columns))
 	for i, col := range t.columns {
-		names[i] = col.Name
+		names[i] = col.name
 	}
 	return names
 }
@@ -162,7 +172,7 @@ func (t *Table) getBorderDelimiter() string {
 }
 
 func (t *Table) cellLine(line string, c *Column) string {
-	switch c.Alignment {
+	switch c.alignment {
 	case AlignRight:
 		return strings.Repeat(" ", c.getEffectiveWidth()-len(line)) + line
 	case AlignCenter:
@@ -179,8 +189,8 @@ func (t *Table) printRow(w io.Writer, lines []string, header bool) error {
 	for i, line := range lines {
 		col := t.columns[i]
 		cells[i] = t.cellLine(line, col)
-		if !header && col.Color != ColorNone {
-			cells[i] = string(col.Color) + cells[i] + colorReset
+		if !header && col.color != ColorNone {
+			cells[i] = string(col.color) + cells[i] + colorReset
 		}
 		if header && t.headersColor != ColorNone {
 			cells[i] = string(t.headersColor) + cells[i] + colorReset

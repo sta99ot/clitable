@@ -7,48 +7,47 @@ import (
 )
 
 func fillTable(t *testing.T, table *Table) {
-	require.NoError(t, table.AddRow(1, "Ho", "Hello\n there"))
-	require.NoError(t, table.AddRow(2, "Two", "Longer message"))
-	require.NoError(t, table.AddRow(2, "Two", []string{"one", "two", "three"}))
-	require.NoError(t, table.AddRow(2, "Two", map[string]interface{}{"field_one": "one", "field_two": 2}))
+	require.NoError(t, table.AddRow(1, "One", "Hello\nthere"))
+	require.NoError(t, table.AddRow(2, "Two", "I'm your friend"))
+	require.NoError(t, table.AddRow(3, "Three", []string{"one", "two", "three"}))
+	require.NoError(t, table.AddRow(4, "Four", map[string]interface{}{"field_one": "one", "field_two": 2}))
 
 }
 
 var cols = []*Column{
-	NewColumn("id", WithColumnAlignment(AlignLeft), WithColumnColor(ColorCyan)),
-	NewColumn("name", WithColumnAlignment(AlignRight), WithColumnColor(ColorGray)),
-	NewColumn("desc", WithColumnAlignment(AlignLeft), WithColumnColor(ColorYellow)),
+	NewColumn("id", "ID", WithLeftAlignment(), WithColumnColor(ColorCyan)),
+	NewColumn("name", "NAME", WithCenterAlignment(), WithColumnColor(ColorRed)),
+	NewColumn("desc", "DESCRIPTION", WithLeftAlignment(), WithColumnMaxWidth(16)),
 }
 
 func TestTables(t *testing.T) {
 	println("Default borders:")
-	tableDefault, _ := NewTable(
+	table, _ := NewTable(
 		cols,
-		WithTableBorders(BordersDefault),
-		WithTableHeadersColor(ColorGreen),
-		WithBordersColor(ColorRed),
+		WithDefaultBorders(),
+		WithHeadersColor(ColorYellow),
+		WithBordersColor(ColorGray),
 	)
-	fillTable(t, tableDefault)
-	require.NoError(t, tableDefault.Print())
+	fillTable(t, table)
+	require.NoError(t, table.Print())
 	println("Minimal borders:")
 
-	tableMinimal, _ := NewTable(
+	table, _ = NewTable(
 		cols,
-		WithTableBorders(BordersMinimal),
-		WithTableHeadersColor(ColorGreen),
-		WithBordersColor(ColorRed),
+		WithMinimalBorders(),
+		WithHeadersColor(ColorYellow),
+		WithBordersColor(ColorGray),
 	)
-	fillTable(t, tableMinimal)
-	require.NoError(t, tableMinimal.Print())
+	fillTable(t, table)
+	require.NoError(t, table.Print())
 
 	println("No borders:")
-	tableNone, _ := NewTable(
+	table, _ = NewTable(
 		cols,
-		WithTableBorders(BordersNone),
-		WithTableHeadersColor(ColorGreen),
-		WithBordersColor(ColorRed),
+		WithoutBorders(),
+		WithHeadersColor(ColorYellow),
+		WithBordersColor(ColorGray),
 	)
-	fillTable(t, tableNone)
-	require.NoError(t, tableNone.Print())
+	fillTable(t, table)
+	require.NoError(t, table.Print())
 }
-
